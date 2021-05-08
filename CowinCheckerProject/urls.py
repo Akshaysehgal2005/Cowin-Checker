@@ -19,6 +19,6 @@ from CowinCheckerApp import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('',views.index),
-    path('bypin', views.bypin),
+    #path('',views.index),
+    path('', views.bypin),
 ]
