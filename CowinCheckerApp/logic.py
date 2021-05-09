@@ -28,6 +28,7 @@ def get_by_pin(pin, date):
 
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
     result = requests.get(url_pin_fill, headers=headers)
+    print('response from api setu!!:', result)
 
     meta = ['center_id', 'name', 'address', 'state_name', 'district_name', 'block_name', 'pincode', 'fee_type']
     df = pd.json_normalize(result.json()['centers'], 'sessions',meta)
