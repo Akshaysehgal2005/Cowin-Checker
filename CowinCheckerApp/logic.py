@@ -21,7 +21,7 @@ def fetch_districts():
 def get_today():
     return datetime.today().strftime('%d-%m-%Y')
 
-def get_by_pin(pin):
+def get_by_pin(pin, age):
     url_pin = 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin'
     url_pin_fill = url_pin + '?pincode='+ pin + '&date=' + get_today()
 
@@ -34,16 +34,23 @@ def get_by_pin(pin):
 
     return df.to_dict()
 
-def get_by_district(district):
+def get_by_district(district, age):
     url_district = 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict'
-    url_district_fill = url_district + '?district_id='+ district + '&date=' + get_today()
+    url_district_fill = url_district + '?district_id=' + district + '&date=' + get_today()
 
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
     result = requests.get(url_district_fill, headers=headers)
 
     meta = ['center_id', 'name', 'address', 'state_name', 'district_name', 'block_name', 'pincode', 'fee_type']
-    df = pd.json_normalize(result.json()['centers'], 'sessions',meta)
+    df = pd.json_normalize(result.json()['centers'], 'sessions', meta)
     df = df.drop(['slots'], 1)
 
-    return df.to_dict()
+    if age == '45':
+        df = df[df['min_age_limit'] == 45]
+    elif age == '18':
+        df = df[df['min_age_limit'] == 18]
+
+    df = df[df['available_capacity']>0]
+
+    return df.to_html()
 

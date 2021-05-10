@@ -10,13 +10,15 @@ def index(request):
                             "<br><br>"
                             "www.akshaysehgal.com © 2021")
 
-def bypin(request):
+def bypin(request, age):
         pin = request.GET.get("pin",'122001')
-        result = get_by_pin(pin)
+        age = request.GET.get("age", '')
+        result = get_by_pin(pin, age)
         return JsonResponse(result)
 
 def bydistrict(request):
         district = request.GET.get("district",'188')
-        result = get_by_district(district)
-        return JsonResponse(result)
+        age = request.GET.get("age", '')
+        result = get_by_district(district, age)
+        return HttpResponse(result)
 
