@@ -5,6 +5,8 @@ import requests
 import json
 import pickle
 
+token = "1888108921:AAErkMkgi1SZQoazLxk4cP2tQ0AEv_S2PfI"
+
 def fetch_districts():
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
     states = requests.get('https://cdn-api.co-vin.in/api/v2/admin/location/states', headers=headers)
@@ -27,7 +29,7 @@ def get_today():
 def get_by_district(district, age, vaccine, fee):
     # Create request and call api setu
     url_district = 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict'
-    url_district_fill = url_district + '?district_id=' + district + '&date=' + get_today()
+    url_district_fill = url_district + '?district_id=' + str(district) + '&date=' + get_today()
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
     result = requests.get(url_district_fill, headers=headers)
 
@@ -52,13 +54,20 @@ def get_by_district(district, age, vaccine, fee):
     return df.to_html()
 
 #import district dictionary
+# districts_dict = fetch_districts()
+# districts_dict_inv = dict((v,k) for k,v in districts_dict.items())
+#
+# with open('districts_dict.pickle', 'wb') as handle:
+#     pickle.dump(districts_dict_inv, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
 with open('districts_dict.pickle', 'rb') as handle:
     districts_dict = pickle.load(handle)
 
+
 class telegram_chatbot():
 
-    def __init__(self):
-        self.token = "1888108921:AAErkMkgi1SZQoazLxk4cP2tQ0AEv_S2PfI"
+    def __init__(self, token):
+        self.token = token
         self.base = "https://api.telegram.org/bot{}/".format(self.token)
 
     def get_updates(self, offset=None):
@@ -73,28 +82,62 @@ class telegram_chatbot():
         if msg is not None:
             requests.get(url)
 
-bot = telegram_chatbot()
+bot = telegram_chatbot(token)
+
+slot_flag = 0
+inp_params = ['140','skip','skip','skip']
 
 #Responses
 def make_reply(msg):
+    global slot_flag
+    global inp_params
     reply = None
-    if msg is not None:
+    if msg is not None and msg.split()[0]=='@VacHelperBot':
+        msg = ' '.join(msg.split()[1:])
         if msg.lower() in ['hello','hi','hi there']:
             reply = "hello"
         elif msg.lower() in ['thanks','thank you']:
             reply = "You are welcome!"
-        elif msg.lower().isnumeric():
-            reply = get_by_district(msg, age='', vaccine='', fee='')
+        elif msg.lower() == '!slot':
+            slot_flag = 1
+            reply = "Please enter district name"
+        elif msg in list(districts_dict.keys()) and slot_flag==1:
+            inp_params[0] = districts_dict.get(str(msg),'140')
+            slot_flag=2
+            reply = "Please enter age group (skip, 18, 45)"
+        elif msg.lower() in ['skip','18','45'] and slot_flag==2:
+            inp_params[1] = msg
+            slot_flag=3
+            reply = "Please enter vaccine type (skip, covaxin, covishield)"
+        elif msg.lower() in ['skip', 'covaxin', 'covishield'] and slot_flag==3:
+            inp_params[2] = msg.upper()
+            slot_flag=4
+            reply = "Please enter fee type (skip, free, paid)"
+        elif msg.lower() in ['skip', 'free', 'paid'] and slot_flag==4:
+            inp_params[3] = msg[0].upper()+msg[1:].lower()
+            slot_flag=0
+            print(inp_params)
+            reply = get_by_district(*inp_params)
+            inp_params = ['140', 'skip', 'skip', 'skip']
+        elif msg.lower() == '!clear':
+            inp_params = ['140', 'skip', 'skip', 'skip']
+            reply = "All inputs cleared!"
+        elif msg.lower() == '!help':
+            reply = "Try the following commands: \n !help - Helpful commands \n !slot - Check slot availability \n !clear - Clear inputs"
+        else:
+            reply = "Invalid input!"
     return reply
 
 
 #update_id = None
-u = 'https://api.telegram.org/bot1888108921:AAErkMkgi1SZQoazLxk4cP2tQ0AEv_S2PfI/getUpdates'
-update_id = requests.get(u).json()['result'][-1].get('update_id',None)
+u = "https://api.telegram.org/bot"+token+"/getUpdates"
+try: update_id = get_resp(token).get('update_id',None)
+except: update_id = None
 
-#while True:
+
 print("Bot is running!")
-for i in range(2):
+#while True:              #<----- Use while loop instead of for loop when going live!
+for i in range(20):
     updates = bot.get_updates(offset=update_id)
     updates = updates["result"]
     if updates:
