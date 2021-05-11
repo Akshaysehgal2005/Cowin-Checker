@@ -33,7 +33,7 @@ def get_by_district(district, age, vaccine, fee):
     # Normalize json
     meta = ['center_id', 'name', 'address', 'state_name', 'district_name', 'block_name', 'pincode', 'fee_type']
     df = pd.json_normalize(result.json()['centers'], 'sessions', meta)
-    df = df.drop(['slots'], 1)
+    df = df.drop(['slots','block_name','session_id'], 1)
 
     # Apply input filters
     try: age = int(age)
