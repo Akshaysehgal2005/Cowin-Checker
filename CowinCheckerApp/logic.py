@@ -1,7 +1,9 @@
 import time
-import requests
 import pandas as pd
 from datetime import datetime
+import requests
+import json
+import pickle
 
 def fetch_districts():
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
@@ -21,7 +23,6 @@ def fetch_districts():
 
 def get_today():
     return datetime.today().strftime('%d-%m-%Y')
-
 
 def get_by_district(district, age, vaccine, fee):
     # Create request and call api setu
@@ -50,22 +51,60 @@ def get_by_district(district, age, vaccine, fee):
     df = df[df['available_capacity'] > 0]
     return df.to_html()
 
+#import district dictionary
+with open('districts_dict.pickle', 'rb') as handle:
+    districts_dict = pickle.load(handle)
+
+class telegram_chatbot():
+
+    def __init__(self):
+        self.token = "1888108921:AAErkMkgi1SZQoazLxk4cP2tQ0AEv_S2PfI"
+        self.base = "https://api.telegram.org/bot{}/".format(self.token)
+
+    def get_updates(self, offset=None):
+        url = self.base + "getUpdates?timeout=100"
+        if offset:
+            url = url + "&offset={}".format(offset + 1)
+        r = requests.get(url)
+        return json.loads(r.content)
+
+    def send_message(self, msg):
+        url = self.base + "sendMessage?chat_id=-570867631&text={}".format(msg)
+        if msg is not None:
+            requests.get(url)
+
+bot = telegram_chatbot()
+
+#Responses
+def make_reply(msg):
+    reply = None
+    if msg is not None:
+        if msg.lower() in ['hello','hi','hi there']:
+            reply = "hello"
+        elif msg.lower() in ['thanks','thank you']:
+            reply = "You are welcome!"
+        elif msg.lower().isnumeric():
+            reply = get_by_district(msg, age='', vaccine='', fee='')
+    return reply
 
 
+#update_id = None
+u = 'https://api.telegram.org/bot1888108921:AAErkMkgi1SZQoazLxk4cP2tQ0AEv_S2PfI/getUpdates'
+update_id = requests.get(u).json()['result'][-1].get('update_id',None)
 
-
-
-
-
-# def get_by_pin(pin):
-#     url_pin = 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin'
-#     url_pin_fill = url_pin + '?pincode='+ pin + '&date=' + get_today()
-#
-#     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
-#     result = requests.get(url_pin_fill, headers=headers)
-#
-#     meta = ['center_id', 'name', 'address', 'state_name', 'district_name', 'block_name', 'pincode', 'fee_type']
-#     df = pd.json_normalize(result.json()['centers'], 'sessions',meta)
-#     df = df.drop(['slots'], 1)
-#
-#     return df.to_dict()
+#while True:
+print("Bot is running!")
+for i in range(2):
+    updates = bot.get_updates(offset=update_id)
+    updates = updates["result"]
+    if updates:
+        for item in updates:
+            update_id = item["update_id"]
+            try:
+                message = str(item["message"]["text"])
+            except:
+                message = None
+            from_ = item["message"]["from"]["id"]
+            reply = make_reply(message)
+            bot.send_message(reply)
+            time.sleep(0.75)

@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from CowinCheckerApp import views
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',views.index),
@@ -24,3 +25,7 @@ urlpatterns = [
     #path('bypin', views.bypin),
     path('bydistrict', views.bydistrict), #Test it - http://127.0.0.1:8000/bydistrict?district=140&age=18&fee=Paid
 ]
+
+#TELEGRAM BOT -
+# Fetch message history - "https://api.telegram.org/bot"+token+"/getUpdates"
+# Send message - "https://api.telegram.org/bot"+token+"/sendMessage?text="+response+"&chat_id="+chat_id_user
