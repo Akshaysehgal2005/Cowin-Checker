@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from CowinCheckerApp.logic import get_by_pin, get_by_district
+from CowinCheckerApp.logic import get_by_district, fetch_districts
 
 # Create your views here.
 
@@ -10,15 +10,20 @@ def index(request):
                             "<br><br>"
                             "www.akshaysehgal.com © 2021")
 
-def bypin(request, age):
+def bypin(request):
         pin = request.GET.get("pin",'122001')
         age = request.GET.get("age", '')
         result = get_by_pin(pin, age)
         return JsonResponse(result)
 
 def bydistrict(request):
-        district = request.GET.get("district",'188')
+        district = request.GET.get("district",'140')
         age = request.GET.get("age", '')
-        result = get_by_district(district, age)
+        vaccine = request.GET.get("vaccine", '')
+        fee = request.GET.get("fee", '')
+        result = get_by_district(district, age, vaccine, fee)
         return HttpResponse(result)
+
+def getdistricts(request):
+    return HttpResponse(fetch_districts())
 

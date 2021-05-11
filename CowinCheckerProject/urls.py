@@ -20,6 +20,7 @@ from CowinCheckerApp import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',views.index),
-    path('bypin', views.bypin),
-    path('bydistrict', views.bydistrict),
+    path('getdistricts',views.getdistricts),
+    #path('bypin', views.bypin),
+    path('bydistrict', views.bydistrict), #Test it - http://127.0.0.1:8000/bydistrict?district=140&age=18&fee=Paid
 ]
