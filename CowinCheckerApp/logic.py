@@ -2,6 +2,7 @@ import time
 import requests
 import pandas as pd
 from datetime import datetime
+import pickle
 
 def fetch_districts():
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
@@ -22,11 +23,20 @@ def fetch_districts():
 def get_today():
     return datetime.today().strftime('%d-%m-%Y')
 
-
 def get_by_district(district, age, vaccine, fee):
+
+    #fix district id
+    with open('districts_dict.pickle', 'rb') as handle:
+        districts_dict = pickle.load(handle)
+
+    if district=='Gurugram':
+        district='Gurgaon'
+
+    district = districts_dict.get(district)
+
     # Create request and call api setu
     url_district = 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict'
-    url_district_fill = url_district + '?district_id=' + district + '&date=' + get_today()
+    url_district_fill = url_district + '?district_id=' + str(district) + '&date=' + get_today()
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
     result = requests.get(url_district_fill, headers=headers)
 
@@ -48,7 +58,14 @@ def get_by_district(district, age, vaccine, fee):
 
     # Filter for available capacity only
     df = df[df['available_capacity'] > 0]
-    return df.to_html()
+    return df#.to_html()
+
+def nlg(df):
+    if len(df) > 0:
+        return "I found {} slots available across {} centers for this district in coming week for your search parameters".format(
+                df['available_capacity'].sum(), len(df))
+    else:
+        return "No available slots in this district. Please check again later."
 
 
 

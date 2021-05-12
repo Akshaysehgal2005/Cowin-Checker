@@ -23,4 +23,6 @@ urlpatterns = [
     path('getdistricts',views.getdistricts),
     #path('bypin', views.bypin),
     path('bydistrict', views.bydistrict), #Test it - http://127.0.0.1:8000/bydistrict?district=140&age=18&fee=Paid
+    path('botreply', views.botreply), #Test it - http://127.0.0.1:8000/bydistrict?district=140&age=18&fee=Paid
+    path('webhook_endpoint',views.webhook_endpoint)
 ]
