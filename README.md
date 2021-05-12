@@ -3,11 +3,11 @@
 Vaccination slot checking application (integrated with telegram bot @VaccineHelperBot)
 
 Current Stack - 
-- TelegramAPI : Frontend for end user
-- Dialogflow : Conversation handling, entity extraction
-- Ngrok : Webhook and tunneling localhost to web
-- AWS-EC2 : Cloud deployment @ Mumbai server (India onsoil for API Setu)
-- Django : Application logic and endpoints
+- **TelegramAPI** : Frontend for end user
+- **Dialogflow** : Conversation handling, entity extraction
+- **Ngrok** : Webhook and tunneling localhost to web
+- **AWS-EC2** : Cloud deployment @ Mumbai server (India onsoil for API Setu)
+- **Django** : Application logic and endpoints
 
 *Author: Akshay Sehgal @ 2021*
 
