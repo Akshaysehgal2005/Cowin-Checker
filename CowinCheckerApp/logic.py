@@ -6,6 +6,7 @@ import json
 import pickle
 
 token = "1888108921:AAErkMkgi1SZQoazLxk4cP2tQ0AEv_S2PfI"
+group_id = '-407207987'  #'-570867631'
 
 def fetch_districts():
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
@@ -51,7 +52,20 @@ def get_by_district(district, age, vaccine, fee):
 
     # Filter for available capacity only
     df = df[df['available_capacity'] > 0]
-    return df.to_html()
+    return df
+
+def nlg(district, age, vaccine, fee):
+    df = get_by_district(district, age, vaccine, fee)
+    try:
+        if len(df) > 0:
+            return "I found {} slots available across {} centers for the {} district in the next few days for your search parameters".format(
+                    df['available_capacity'].sum(), len(df), df['district_name'][0])
+        else:
+            return "No available slots in this district. Please check again later."
+    except:
+        return "No available slots in this district. Please check again later."
+
+
 
 #import district dictionary
 # districts_dict = fetch_districts()
@@ -78,7 +92,7 @@ class telegram_chatbot():
         return json.loads(r.content)
 
     def send_message(self, msg):
-        url = self.base + "sendMessage?chat_id=-570867631&text={}".format(msg)
+        url = self.base + "sendMessage?chat_id="+group_id+"&text={}".format(msg)
         if msg is not None:
             requests.get(url)
 
@@ -115,29 +129,40 @@ def make_reply(msg):
             reply = "Please enter fee type (skip, free, paid)"
         elif msg.lower() in ['skip', 'free', 'paid'] and slot_flag==4:
             inp_params[3] = msg[0].upper()+msg[1:].lower()
-            slot_flag=0
             print(inp_params)
-            reply = get_by_district(*inp_params)
+            slot_flag = 0
+            reply = nlg(*inp_params)
             inp_params = ['140', 'skip', 'skip', 'skip']
+
         elif msg.lower() == '!clear':
             inp_params = ['140', 'skip', 'skip', 'skip']
             reply = "All inputs cleared!"
         elif msg.lower() == '!help':
-            reply = "Try the following commands: \n !help - Helpful commands \n !slot - Check slot availability \n !clear - Clear inputs"
+            reply = "Try the following commands: \n NOTE!! Please make sure to include @VacHelperBot before each response to the bot! \n !help - Helpful commands \n !slot - Check slot availability \n !clear - Clear inputs"
         else:
             reply = "Invalid input!"
     return reply
 
+# def send_msg(m, token):
+#     base = "https://api.telegram.org/bot{}/".format(token)
+#     url = base + "sendMessage?chat_id=-570867631&text={}".format(m)
+#     if m is not None:
+#         requests.get(url)
+#
 
-#update_id = None
-u = "https://api.telegram.org/bot"+token+"/getUpdates"
+def get_resp(token):
+    base = "https://api.telegram.org/bot{}/".format(token)
+    url = base + "getUpdates"
+    item = requests.get(url).json()['result'][-1]
+    return item
+
+# update_id = None
 try: update_id = get_resp(token).get('update_id',None)
 except: update_id = None
 
-
 print("Bot is running!")
-#while True:              #<----- Use while loop instead of for loop when going live!
-for i in range(20):
+while True:
+#for i in range(20):
     updates = bot.get_updates(offset=update_id)
     updates = updates["result"]
     if updates:
