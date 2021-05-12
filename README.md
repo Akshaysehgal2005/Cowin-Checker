@@ -1,6 +1,6 @@
 # Cowin-Checker
 
-Vaccination slot checking application (integrated with telegram bot **@VaccineHelperBot**)
+Vaccination slot checking application (integrated with telegram bot **@CoWinston_bot.**)
 
 Current Stack - 
 - **TelegramAPI** : Frontend for end user
