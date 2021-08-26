@@ -1,4 +1,4 @@
-authtoken: 1sQ0ZLsI5x4ZZb07hFcUciPf1Xk_58BYR1cg9zY7rDSfRNz4
+authtoken: 1234
 tunnels:
     default:
         proto: http
